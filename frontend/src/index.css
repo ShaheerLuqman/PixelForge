@@ -5,9 +5,31 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: #343541;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.ant-form-item-label > label {
+  color: #fff !important;
+}
+
+.ant-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.ant-input {
+  color: #fff !important;
+}
+
+.ant-upload-drag {
+  background: #40414f !important;
+  border-color: #565869 !important;
+}
+
+.ant-upload-drag p {
+  color: #fff !important;
 }
