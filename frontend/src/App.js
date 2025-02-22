@@ -9,6 +9,7 @@ import {
   Form,
   Spin,
 } from "antd";
+import axios from "axios";
 
 const { Sider, Content } = Layout;
 const { Title } = Typography;
@@ -35,7 +36,7 @@ function App() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (
       !formData.productImage ||
       !formData.productName ||
@@ -45,11 +46,28 @@ function App() {
       return;
     }
     setIsLoading(true);
-    setTimeout(() => {
-      setProcessedImage(formData.productImage);
+
+    const formDataToSend = new FormData();
+    formDataToSend.append('image', formData.productImage);
+
+    try {
+      const response = await axios.post('http://127.0.0.1:5000/remove-bg', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        responseType: 'blob', // Important for receiving binary data
+      });
+
+      const imageBlob = response.data;
+      const imageObjectURL = URL.createObjectURL(imageBlob);
+      setProcessedImage(imageObjectURL);
       setCurrentStage(currentStage + 1);
+    } catch (error) {
+      console.error('Error uploading the image:', error);
+      message.error('Error processing the image.');
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
   const handleSubmit = () => {
@@ -286,7 +304,7 @@ function App() {
                     }}
                   >
                     <img
-                      src={URL.createObjectURL(processedImage)}
+                      src={processedImage}
                       alt="Processed Product"
                       style={{
                         maxHeight: "300px",
@@ -348,7 +366,7 @@ function App() {
                   </h3>
                   <div style={{ display: "flex", justifyContent: "center" }}>
                     <img
-                      src={URL.createObjectURL(processedImage)}
+                      src={processedImage}
                       alt="Original Product"
                       style={{
                         maxHeight: "300px",
@@ -431,7 +449,7 @@ function App() {
                           }}
                         >
                           <img
-                            src={URL.createObjectURL(processedImage)} // Placeholder - replace with actual background image
+                            src={processedImage} // Placeholder - replace with actual background image
                             alt={`Background ${index + 1}`}
                             style={{
                               width: "100%",
