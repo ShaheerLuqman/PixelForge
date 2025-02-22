@@ -1,0 +1,4 @@
+onnxruntime
+Flask
+flask-cors
+rembg
