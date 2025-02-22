@@ -16,14 +16,12 @@ if __name__ == "__main__":
 
 
 def remove_bg(image):
-    input_path = 'input.png'
-    output_path = 'output.png'
-    with open(input_path, 'wb') as f:
-        f.write(image)
-    remove(input_path, output_path)
-    with open(output_path, 'rb') as f:
-        return f.read()
-    
+    # input_path = 'input.png'
+    # output_path = 'output.png'
+    # with open(input_path, 'wb') as f:
+    #     f.write(image)
+    return remove(image)
+  
 
 
 @app.route('/remove-bg', methods=['POST'])
