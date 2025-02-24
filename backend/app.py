@@ -29,13 +29,27 @@ def generate_bg_1_route():
     if 'image' not in request.files:
         return jsonify({'error': 'No image provided'}), 400
 
-    # Get image and body data
-    image = request.files['image'].read()
-    body_data = request.form.to_dict()
-
+    # Get image and convert to PIL Image
+    image_file = request.files['image'].read()
+    image = Image.open(io.BytesIO(image_file))
+    
     try:
-        result = generate_bg_model_1(image, body_data)
-        return result, 200, {'Content-Type': 'image/png'}
+        # Create temporary directory if it doesn't exist
+        os.makedirs("temp", exist_ok=True)
+        
+        # Save the input image first
+        input_path = "temp/product-nonbg.png"
+        image.save(input_path)
+        
+        # Generate background
+        result_image, text_color = generate_bg_model_1(image, input_path)
+        
+        # Convert result back to bytes
+        img_byte_arr = io.BytesIO()
+        result_image.save(img_byte_arr, format='PNG')
+        img_byte_arr = img_byte_arr.getvalue()
+        
+        return img_byte_arr, 200, {'Content-Type': 'image/png'}
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
