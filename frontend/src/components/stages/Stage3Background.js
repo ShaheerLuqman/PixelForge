@@ -12,16 +12,18 @@ const Stage3Background = ({
   setSelectedBackgroundIndex,
   setCurrentStage,
   handleStage3Next,
-  setIsLoading
+  setIsLoading,
+  setProcessedImage,
+  generatedImage,
+  setGeneratedImage,
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState('');
   const [selectedModel, setSelectedModel] = useState(null);
-  const [generatedImage, setGeneratedImage] = useState(null);
 
   const models = [
-    { id: 1, name: 'Product Style Model' },
-    { id: 2, name: 'Lifestyle Model' }
+    { id: 1, name: 'IP2P' },
+    { id: 2, name: 'QABG' }
   ];
 
   const handleGenerateBackground = async () => {
@@ -40,7 +42,7 @@ const Stage3Background = ({
       // Convert base64 URL to blob
       const response = await fetch(processedImage);
       const blob = await response.blob();
-      formData.append('image', blob, 'product-nonbg.png'); // Add filename
+      formData.append('image', blob, 'product-nonbg.png');
 
       // Call appropriate API based on selected model
       const apiEndpoint = selectedModel === 1 ? '/generate-bg-1' : '/generate-bg-2';
@@ -69,6 +71,7 @@ const Stage3Background = ({
       message.error('Please generate a background image first');
       return;
     }
+    setProcessedImage(generatedImage);
     handleStage3Next();
   };
 

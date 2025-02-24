@@ -39,6 +39,30 @@ function App() {
   const [currentSlogan, setCurrentSlogan] = useState("");
   const [currentCaption, setCurrentCaption] = useState("");
   const [rating, setRating] = useState(0);
+  const [finalImage, setFinalImage] = useState(null);
+  const [generatedImage, setGeneratedImage] = useState(null);
+
+  const handleReset = () => {
+    setCurrentStage(1);
+    setIsLoading({
+      main: false,
+      slogan: false,
+      caption: false,
+    });
+    setProcessedImage(null);
+    setFormData({
+      productImage: null,
+      productName: "",
+      productDescription: "",
+    });
+    setSelectedBackgroundId(1);
+    setSelectedBackgroundIndex(0);
+    setCurrentSlogan("");
+    setCurrentCaption("");
+    setRating(0);
+    setFinalImage(null);
+    setGeneratedImage(null);
+  };
 
   const handleImageUpload = (file) => {
     setFormData({ ...formData, productImage: file });
@@ -99,26 +123,19 @@ function App() {
 
   // Stage 3: Background selection
   const handleStage3Next = () => {
-    // TODO: Backend Connection - Save background selection
-    // API endpoint: POST /api/save-product
-    // Request body: {
-    //   productName: formData.productName,
-    //   productDescription: formData.productDescription,
-    //   originalImage: processedImage,
-    //   selectedBackground: selectedBackgroundIndex
-    // }
+    if (!generatedImage) {
+      message.error("Please generate a background first");
+      return;
+    }
     setCurrentStage(4);
   };
 
   // Stage 4: Marketing content
   const handleStage4Next = () => {
-    // TODO: Backend Connection - Save all content
-    // API endpoint: POST /api/save-content
-    // Request body: {
-    //   productId: currentProductId,
-    //   slogan: currentSlogan,
-    //   caption: currentCaption
-    // }
+    if (!currentSlogan || !currentCaption) {
+      message.error('Please generate both slogan and caption before proceeding.');
+      return;
+    }
     setCurrentStage(5);
   };
 
@@ -191,6 +208,9 @@ function App() {
               setCurrentStage={setCurrentStage}
               handleStage3Next={handleStage3Next}
               setIsLoading={setIsLoading}
+              setProcessedImage={setProcessedImage}
+              generatedImage={generatedImage}
+              setGeneratedImage={setGeneratedImage}
             />
           )}
 
@@ -205,16 +225,19 @@ function App() {
               setCurrentStage={setCurrentStage}
               handleStage4Next={handleStage4Next}
               setIsLoading={setIsLoading}
+              formData={formData}
             />
           )}
 
           {currentStage === 5 && (
             <Stage5Final
-              processedImage={processedImage}
-              setCurrentStage={setCurrentStage}
-              handleSubmit={handleSubmit}
+              generatedImage={generatedImage}
+              currentSlogan={currentSlogan}
+              currentCaption={currentCaption}
               rating={rating}
               setRating={setRating}
+              handleReset={handleReset}
+              setCurrentStage={setCurrentStage}
             />
           )}
         </Content>

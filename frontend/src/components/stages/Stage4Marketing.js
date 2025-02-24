@@ -16,14 +16,17 @@ const Stage4Marketing = ({
   formData
 }) => {
   const generateSlogan = async () => {
+    console.log('Generating slogan...');
     try {
       setIsLoading((prevState) => ({ ...prevState, slogan: true }));
+      console.log('Making API request to generate slogan...');
       const response = await axios.post('http://127.0.0.1:5000/generate-slogan', {
-        productName: formData.productName,
-        productDescription: formData.productDescription
+        imagePath: 'temp/product-nonbg.png'
       });
+      console.log('Slogan response:', response.data);
       setCurrentSlogan(response.data.slogan);
     } catch (error) {
+      console.error('Slogan generation error:', error);
       message.error('Failed to generate slogan. Please try again.');
     } finally {
       setIsLoading((prevState) => ({ ...prevState, slogan: false }));
@@ -31,14 +34,18 @@ const Stage4Marketing = ({
   };
 
   const generateCaption = async () => {
+    console.log('Generating caption...');
     try {
       setIsLoading((prevState) => ({ ...prevState, caption: true }));
+      console.log('Making API request to generate caption...');
       const response = await axios.post('http://127.0.0.1:5000/generate-description', {
-        productName: formData.productName,
-        productDescription: formData.productDescription
+        imagePath: 'temp/product-nonbg.png',
+        productName: formData.productName
       });
+      console.log('Caption response:', response.data);
       setCurrentCaption(response.data.description);
     } catch (error) {
+      console.error('Caption generation error:', error);
       message.error('Failed to generate caption. Please try again.');
     } finally {
       setIsLoading((prevState) => ({ ...prevState, caption: false }));
@@ -175,7 +182,7 @@ const Stage4Marketing = ({
           onClick={handleStage4Next}
           style={{ background: "#19c37d", border: "none" }}
         >
-          Finish
+          Next
         </Button>
       </div>
     </div>

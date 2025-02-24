@@ -78,7 +78,11 @@ def generate_slogan_route():
 
     try:
         data = request.get_json()
-        result = generate_slogan(data)
+        image_path = data.get('imagePath')
+        if not image_path:
+            return jsonify({'error': 'Image path is required'}), 400
+            
+        result = generate_slogan(image_path)
         return jsonify({'slogan': result}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -90,9 +94,16 @@ def generate_description_route():
 
     try:
         data = request.get_json()
-        result = generate_description(data)
+        image_path = data.get('imagePath')
+        product_name = data.get('productName')
+        
+        if not image_path or not product_name:
+            return jsonify({'error': 'Image path and product name are required'}), 400
+            
+        result = generate_description(image_path, product_name)
         return jsonify({'description': result}), 200
     except Exception as e:
+        print(f"Error in generate_description_route: {e}")
         return jsonify({'error': str(e)}), 500
     
 

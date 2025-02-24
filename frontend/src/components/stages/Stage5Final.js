@@ -4,7 +4,7 @@ import { Typography, Button, Rate, Space } from "antd";
 const { Title } = Typography;
 
 const Stage5Final = ({
-  processedImage,
+  generatedImage,
   currentSlogan,
   currentCaption,
   rating,
@@ -39,7 +39,7 @@ const Stage5Final = ({
         }}
       >
         <img
-          src={processedImage}
+          src={generatedImage}
           alt="Final Product"
           style={{
             maxWidth: "100%",
@@ -60,7 +60,9 @@ const Stage5Final = ({
           }}
         >
           <h3 style={{ color: "#fff", marginTop: 0 }}>Slogan</h3>
-          <p style={{ margin: 0, color: "#fff" }}>{currentSlogan}</p>
+          <p style={{ margin: 0, color: "#fff" }}>
+            {currentSlogan || 'No slogan generated'}
+          </p>
         </div>
 
         <div
@@ -71,7 +73,9 @@ const Stage5Final = ({
           }}
         >
           <h3 style={{ color: "#fff", marginTop: 0 }}>Caption</h3>
-          <p style={{ margin: 0, color: "#fff" }}>{currentCaption}</p>
+          <p style={{ margin: 0, color: "#fff" }}>
+            {currentCaption || 'No caption generated'}
+          </p>
         </div>
       </div>
 
