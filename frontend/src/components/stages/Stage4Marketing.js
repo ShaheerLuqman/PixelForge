@@ -1,5 +1,6 @@
 import React from 'react';
-import { Typography, Button, Input, Spin } from 'antd';
+import { Typography, Button, Input, Spin, message } from 'antd';
+import axios from 'axios';
 
 const { Title } = Typography;
 
@@ -11,8 +12,39 @@ const Stage4Marketing = ({
   setCurrentCaption,
   setCurrentStage,
   handleStage4Next,
-  setIsLoading
+  setIsLoading,
+  formData
 }) => {
+  const generateSlogan = async () => {
+    try {
+      setIsLoading((prevState) => ({ ...prevState, slogan: true }));
+      const response = await axios.post('http://127.0.0.1:5000/generate-slogan', {
+        productName: formData.productName,
+        productDescription: formData.productDescription
+      });
+      setCurrentSlogan(response.data.slogan);
+    } catch (error) {
+      message.error('Failed to generate slogan. Please try again.');
+    } finally {
+      setIsLoading((prevState) => ({ ...prevState, slogan: false }));
+    }
+  };
+
+  const generateCaption = async () => {
+    try {
+      setIsLoading((prevState) => ({ ...prevState, caption: true }));
+      const response = await axios.post('http://127.0.0.1:5000/generate-description', {
+        productName: formData.productName,
+        productDescription: formData.productDescription
+      });
+      setCurrentCaption(response.data.description);
+    } catch (error) {
+      message.error('Failed to generate caption. Please try again.');
+    } finally {
+      setIsLoading((prevState) => ({ ...prevState, caption: false }));
+    }
+  };
+
   return (
     <div
       className="chat-message"
@@ -41,13 +73,7 @@ const Stage4Marketing = ({
         }}>
           <h3 style={{ color: "#fff", margin: 0 }}>Product Slogan</h3>
           <Button
-            onClick={() => {
-              setIsLoading((prevState) => ({ ...prevState, slogan: true }));
-              setTimeout(() => {
-                setIsLoading((prevState) => ({ ...prevState, slogan: false }));
-                setCurrentSlogan("Your amazing product slogan here");
-              }, 1500);
-            }}
+            onClick={generateSlogan}
             style={{
               background: "#303030",
               border: "none",
@@ -94,13 +120,7 @@ const Stage4Marketing = ({
         }}>
           <h3 style={{ color: "#fff", margin: 0 }}>Social Media Caption</h3>
           <Button
-            onClick={() => {
-              setIsLoading((prevState) => ({ ...prevState, caption: true }));
-              setTimeout(() => {
-                setIsLoading((prevState) => ({ ...prevState, caption: false }));
-                setCurrentCaption("Your engaging social media caption will appear here. #YourBrand #Product");
-              }, 1500);
-            }}
+            onClick={generateCaption}
             style={{
               background: "#303030",
               border: "none",

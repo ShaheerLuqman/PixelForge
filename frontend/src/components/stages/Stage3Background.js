@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Typography, Button, Spin, message, Select } from 'antd';
+import axios from 'axios';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -34,13 +35,27 @@ const Stage3Background = ({
       setGenerationError('');
       setIsLoading(true);
       
-      // Simulated API call - replace with actual backend call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const formData = new FormData();
       
-      // Simulate generated image (using processed image for now)
-      setGeneratedImage(processedImage);
+      // Convert base64 URL to blob
+      const response = await fetch(processedImage);
+      const blob = await response.blob();
+      formData.append('image', blob, 'product-nonbg.png'); // Add filename
+
+      // Call appropriate API based on selected model
+      const apiEndpoint = selectedModel === 1 ? '/generate-bg-1' : '/generate-bg-2';
+      const result = await axios.post(`http://127.0.0.1:5000${apiEndpoint}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        responseType: 'blob',
+      });
+
+      const generatedImageUrl = URL.createObjectURL(result.data);
+      setGeneratedImage(generatedImageUrl);
       setSelectedBackgroundIndex(0);
     } catch (error) {
+      console.error('Background generation error:', error);
       setGenerationError('Failed to generate background. Please try again.');
       message.error('Background generation failed. Please try again.');
     } finally {

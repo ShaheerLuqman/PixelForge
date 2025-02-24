@@ -15,7 +15,7 @@ const Stage2Review = ({ formData, processedImage, setCurrentStage, handleStage2N
       }
       await handleStage2Next();
     } catch (error) {
-      message.error('Failed to process image. Please try uploading again.');
+      message.error('Failed to process image. Please try again.');
       setCurrentStage(1);
     } finally {
       setIsProcessing(false);
