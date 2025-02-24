@@ -11,6 +11,7 @@ import colorsys, torch, warnings, os, random, shutil
 from diffusers import StableDiffusionInstructPix2PixPipeline, DiffusionPipeline
 from transparent_background import Remover
 
+from finalPost import save_as_svg, create_final_image
 
 def remove_bg(image):
     input_img = PILImage.open(io.BytesIO(image))
@@ -191,32 +192,30 @@ def generate_bg_model_1(product_image: Image.Image, output_path: str = None) -> 
     color_names = extract_colors(product_image)
     color_names = (",").join(color_names)
     
-    # Print extracted colors
     print(color_names)
-    # Get suggested background color from Gemini
     suggested_color = get_contrasting_color(color_names)
     
-    # Create prompt using extracted colors and suggested background color
     prompt = f"Recolor the image to shades of {suggested_color[0]}, keeping textures and details intact."
-    text_color = suggested_color[1]  # Store the text color
+    text_color = suggested_color[1]
     print(text_color)
     
-    # Get random background image
+    # Get and process background image
     background_image_path = get_random_background()
     print(f"Selected background: {os.path.basename(background_image_path)}")
     
-    # Load and process the background image
     background_image = Image.open(background_image_path)
-    # Resize background to 500x500 pixels
     background_image = background_image.resize((500, 500), Image.Resampling.LANCZOS)
-    processed_image = recolor_image(background_image, prompt)
+    processed_bg = recolor_image(background_image, prompt)
     
-    # Save the processed image if output_path is provided
+    # Create final image combining background and product
+    final_image = create_final_image(processed_bg, product_image, "", text_color)
+    
+    # Save if output path provided
     if output_path:
-        processed_image.save(output_path)
+        final_image.save(output_path)
         print(f"✓ Processed image saved as: {output_path}")
     
-    return processed_image, text_color  # Return both processed image and text color
+    return final_image, text_color
 
 
 def generate_bg_model_2(product_image: Image.Image, output_path: str = None) -> tuple[Image.Image, str]:
