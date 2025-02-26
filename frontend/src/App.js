@@ -41,6 +41,10 @@ function App() {
   const [rating, setRating] = useState(0);
   const [finalImage, setFinalImage] = useState(null);
   const [generatedImage, setGeneratedImage] = useState(null);
+  const [originalImage, setOriginalImage] = useState(null);
+  const [nonBgImage, setNonBgImage] = useState(null);
+  const [generatedBgImage, setGeneratedBgImage] = useState(null);
+  const [finalImageUrl, setFinalImageUrl] = useState(null);
 
   const handleReset = () => {
     setCurrentStage(1);
@@ -49,7 +53,6 @@ function App() {
       slogan: false,
       caption: false,
     });
-    setProcessedImage(null);
     setFormData({
       productImage: null,
       productName: "",
@@ -60,8 +63,9 @@ function App() {
     setCurrentSlogan("");
     setCurrentCaption("");
     setRating(0);
-    setFinalImage(null);
-    setGeneratedImage(null);
+    setOriginalImage(null);
+    setNonBgImage(null);
+    setGeneratedBgImage(null);
   };
 
   const handleImageUpload = (file) => {
@@ -76,54 +80,50 @@ function App() {
 
   // Stage 1: Initial form submission
   const handleStage1Next = () => {
-    if (
-      !formData.productImage ||
-      !formData.productName ||
-      !formData.productDescription
-    ) {
+    if (!formData.productImage || !formData.productName || !formData.productDescription) {
       message.error("Please fill in all fields and upload an image.");
       return;
     }
 
-    // Create URL for the uploaded image directly
-    const imageObjectURL = URL.createObjectURL(formData.productImage);
-    setProcessedImage(imageObjectURL);
+    // Store original image and move to next stage
+    const originalImageUrl = URL.createObjectURL(formData.productImage);
+    setOriginalImage(originalImageUrl);
+    setProcessedImage(originalImageUrl); // Use original image for now
     setCurrentStage(2);
   };
 
   // Stage 2: Review submission
   const handleStage2Next = async () => {
-    setIsLoading(true);
-    const formDataToSend = new FormData();
-    formDataToSend.append("image", formData.productImage);
-
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:5000/remove-bg",
-        formDataToSend,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          responseType: "blob",
-        }
-      );
+      setIsLoading(prevState => ({ ...prevState, main: true }));
+      
+      // Process image for background removal
+      const formDataToSend = new FormData();
+      formDataToSend.append('image', formData.productImage);
+      
+      const response = await axios.post('http://127.0.0.1:5000/remove-bg', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        responseType: 'blob',
+      });
 
-      const imageBlob = response.data;
-      const imageObjectURL = URL.createObjectURL(imageBlob);
-      setProcessedImage(imageObjectURL);
+      const nonBgImageUrl = URL.createObjectURL(response.data);
+      setNonBgImage(nonBgImageUrl); // Store non-bg image
+      setProcessedImage(nonBgImageUrl); // Update processed image
+      
       setCurrentStage(3);
     } catch (error) {
-      console.error("Error uploading the image:", error);
-      message.error("Error processing the image.");
+      console.error('Error removing background:', error);
+      message.error('Failed to remove background. Please try again.');
     } finally {
-      setIsLoading(false);
+      setIsLoading(prevState => ({ ...prevState, main: false }));
     }
   };
 
   // Stage 3: Background selection
   const handleStage3Next = () => {
-    if (!generatedImage) {
+    if (!generatedBgImage) {
       message.error("Please generate a background first");
       return;
     }
@@ -193,7 +193,8 @@ function App() {
           {currentStage === 2 && (
             <Stage2Review
               formData={formData}
-              processedImage={processedImage}
+              originalImage={originalImage}
+              nonBgImage={nonBgImage}
               setCurrentStage={setCurrentStage}
               handleStage2Next={handleStage2Next}
             />
@@ -201,22 +202,22 @@ function App() {
 
           {currentStage === 3 && (
             <Stage3Background
-              processedImage={processedImage}
+              originalImage={originalImage}
+              nonBgImage={nonBgImage}
               isLoading={isLoading}
               selectedBackgroundIndex={selectedBackgroundIndex}
               setSelectedBackgroundIndex={setSelectedBackgroundIndex}
               setCurrentStage={setCurrentStage}
               handleStage3Next={handleStage3Next}
               setIsLoading={setIsLoading}
-              setProcessedImage={setProcessedImage}
-              generatedImage={generatedImage}
-              setGeneratedImage={setGeneratedImage}
+              generatedBgImage={generatedBgImage}
+              setGeneratedBgImage={setGeneratedBgImage}
             />
           )}
 
           {currentStage === 4 && (
             <Stage4Marketing
-              processedImage={processedImage}
+              generatedBgImage={generatedBgImage}
               isLoading={isLoading}
               currentSlogan={currentSlogan}
               setCurrentSlogan={setCurrentSlogan}
@@ -226,12 +227,13 @@ function App() {
               handleStage4Next={handleStage4Next}
               setIsLoading={setIsLoading}
               formData={formData}
+              setFinalImageUrl={setFinalImageUrl}
             />
           )}
 
           {currentStage === 5 && (
             <Stage5Final
-              generatedImage={generatedImage}
+              finalImageUrl={finalImageUrl}
               currentSlogan={currentSlogan}
               currentCaption={currentCaption}
               rating={rating}

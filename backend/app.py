@@ -1,9 +1,11 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from logics import remove_bg, generate_bg_model_1, generate_bg_model_2, generate_slogan, generate_description
+from finalPost import add_slogan_to_image
 from PIL import Image
 import io
 import os
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -119,6 +121,73 @@ def generate_description_route():
     except Exception as e:
         print(f"Error in generate_description_route: {e}")
         return jsonify({'error': str(e)}), 500
-    
+
+@app.route('/create-final-post', methods=['POST'])
+def create_final_post_route():
+    print("Received POST body:")
+    print(request.form)  # Log the entire form data
+
+    if 'image' not in request.files:
+        return jsonify({'error': 'Image and JSON data are required'}), 400
+
+    # Get image and convert to PIL Image
+    try:
+        image_file = request.files['image'].read()
+        image = Image.open(io.BytesIO(image_file))
+    except Exception as e:
+        print(f"Error loading image: {e}")
+        return jsonify({'error': 'Failed to load image'}), 500
+
+    # Get JSON data
+    try:
+        data = json.loads(request.form['data'])  # Load JSON data from form
+        slogan = data.get('slogan')
+        text_color = data.get('textColor', 'black')  # Default to black if not provided
+    except json.JSONDecodeError as e:
+        print(f"JSON decode error: {e}")
+        return jsonify({'error': 'Invalid JSON data'}), 400
+    except Exception as e:
+        print(f"Error processing JSON data: {e}")
+        return jsonify({'error': 'Failed to process JSON data'}), 500
+
+    if not slogan:
+        print("Slogan is missing from the data.")
+        return jsonify({'error': 'Slogan is required'}), 400
+
+    try:
+        # Create temporary directory if it doesn't exist
+        os.makedirs("temp", exist_ok=True)
+        
+        # Save the input image first
+        input_path = "temp/generated_bg.png"
+        image.save(input_path)
+        
+        # Create temporary file path for output
+        temp_output_path = "temp/final_image.png"
+        print(1)
+
+        # Process image by adding slogan
+        processed_image = add_slogan_to_image(image, slogan, text_color)
+
+        # Check if processed_image is None
+        if processed_image is None:
+            print("Error: add_slogan_to_image returned None.")
+            return jsonify({'error': 'Failed to process image with slogan.'}), 500
+        
+        # Save final image
+        processed_image.save(temp_output_path)
+        print(1)
+        
+        # Convert result back to bytes
+        img_byte_arr = io.BytesIO()
+        print(1)
+        processed_image.save(img_byte_arr, format='PNG')
+        print(1)
+        img_byte_arr = img_byte_arr.getvalue()
+
+        return img_byte_arr, 200, {'Content-Type': 'image/png'}
+    except Exception as e:
+        print(f"Error processing final image: {e}")
+        return jsonify({'error': str(e)}), 500
 
 

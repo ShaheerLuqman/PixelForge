@@ -1,10 +1,10 @@
 import React from "react";
-import { Typography, Button, Rate, Space } from "antd";
+import { Typography, Rate, message, Space, Button } from "antd";
 
 const { Title } = Typography;
 
 const Stage5Final = ({
-  generatedImage,
+  finalImageUrl,
   currentSlogan,
   currentCaption,
   rating,
@@ -38,15 +38,19 @@ const Stage5Final = ({
           justifyContent: "center",
         }}
       >
-        <img
-          src={generatedImage}
-          alt="Final Product"
-          style={{
-            maxWidth: "100%",
-            height: "auto",
-            borderRadius: "8px",
-          }}
-        />
+        {finalImageUrl ? (
+          <img
+            src={finalImageUrl}
+            alt="Final Product"
+            style={{
+              maxWidth: "100%",
+              height: "auto",
+              borderRadius: "8px",
+            }}
+          />
+        ) : (
+          <p style={{ color: "#fff" }}>Creating final post...</p>
+        )}
       </div>
 
       {/* Content Display */}
@@ -61,7 +65,7 @@ const Stage5Final = ({
         >
           <h3 style={{ color: "#fff", marginTop: 0 }}>Slogan</h3>
           <p style={{ margin: 0, color: "#fff" }}>
-            {currentSlogan || 'No slogan generated'}
+            {currentSlogan || "No slogan generated"}
           </p>
         </div>
 
@@ -74,7 +78,7 @@ const Stage5Final = ({
         >
           <h3 style={{ color: "#fff", marginTop: 0 }}>Caption</h3>
           <p style={{ margin: 0, color: "#fff" }}>
-            {currentCaption || 'No caption generated'}
+            {currentCaption || "No caption generated"}
           </p>
         </div>
       </div>

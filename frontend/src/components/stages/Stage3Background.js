@@ -1,29 +1,29 @@
 import React, { useState } from 'react';
-import { Typography, Button, Spin, message, Select } from 'antd';
+import { Typography, Button, Spin, message, Select, notification } from 'antd';
 import axios from 'axios';
 
 const { Title } = Typography;
 const { Option } = Select;
 
 const Stage3Background = ({
-  processedImage,
+  originalImage,
+  nonBgImage,
   isLoading,
   selectedBackgroundIndex,
   setSelectedBackgroundIndex,
   setCurrentStage,
   handleStage3Next,
   setIsLoading,
-  setProcessedImage,
-  generatedImage,
-  setGeneratedImage,
+  generatedBgImage,
+  setGeneratedBgImage,
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState('');
-  const [selectedModel, setSelectedModel] = useState(null);
+  const [selectedModel, setSelectedModel] = useState(1);
 
   const models = [
-    { id: 1, name: 'IP2P' },
-    { id: 2, name: 'QABG' }
+    { id: 1, name: 'Instruct Pix2Pix' },
+    { id: 2, name: 'Salesforce InPainting v2' }
   ];
 
   const handleGenerateBackground = async () => {
@@ -39,12 +39,11 @@ const Stage3Background = ({
       
       const formData = new FormData();
       
-      // Convert base64 URL to blob
-      const response = await fetch(processedImage);
+      // Convert base64 URL to blob using nonBgImage instead of processedImage
+      const response = await fetch(nonBgImage);
       const blob = await response.blob();
       formData.append('image', blob, 'product-nonbg.png');
 
-      // Call appropriate API based on selected model
       const apiEndpoint = selectedModel === 1 ? '/generate-bg-1' : '/generate-bg-2';
       const result = await axios.post(`http://127.0.0.1:5000${apiEndpoint}`, formData, {
         headers: {
@@ -54,12 +53,19 @@ const Stage3Background = ({
       });
 
       const generatedImageUrl = URL.createObjectURL(result.data);
-      setGeneratedImage(generatedImageUrl);
+      setGeneratedBgImage(generatedImageUrl);
       setSelectedBackgroundIndex(0);
     } catch (error) {
       console.error('Background generation error:', error);
       setGenerationError('Failed to generate background. Please try again.');
-      message.error('Background generation failed. Please try again.');
+      notification.error({
+        message: 'Error',
+        description: 'Failed to generate background. Please try again.',
+        style: {
+          background: '#303030',
+          borderRadius: '4px',
+        },
+      });
     } finally {
       setIsGenerating(false);
       setIsLoading(false);
@@ -67,11 +73,28 @@ const Stage3Background = ({
   };
 
   const handleNext = () => {
-    if (!generatedImage) {
-      message.error('Please generate a background image first');
+    if (!generatedBgImage) {
+      message.config({
+        top: 100,
+        duration: 3,
+        maxCount: 3,
+        style: {
+          marginTop: '20vh',
+          zIndex: 1000000
+        },
+      });
+      notification.error({
+        message: 'Error',
+        description: 'Please generate a background image first',
+        style: {
+          background: '#303030',
+          borderRadius: '4px',
+          color: '#fff'
+        },
+      });
       return;
     }
-    setProcessedImage(generatedImage);
+    setSelectedBackgroundIndex(0);
     handleStage3Next();
   };
 
@@ -102,7 +125,7 @@ const Stage3Background = ({
     },
   };
 
-  if (!processedImage) {
+  if (!originalImage) {
     return (
       <div className="chat-message" style={{
         background: "#212121",
@@ -154,11 +177,11 @@ const Stage3Background = ({
 
       {/* Original Product Image Section */}
       <div style={{ marginBottom: "32px" }}>
-        <h3 style={{ color: "#fff", marginBottom: "16px" }}>Original Product</h3>
+        <h3 style={{ color: "#fff", marginBottom: "16px" }}>Product</h3>
         <div style={{ display: "flex", justifyContent: "center" }}>
           <img
-            src={processedImage}
-            alt="Original Product"
+            src={nonBgImage}
+            alt="Product without Background"
             style={{
               maxHeight: "300px",
               width: "auto",
@@ -220,19 +243,6 @@ const Stage3Background = ({
           </Button>
         </div>
 
-        {/* Error Message */}
-        {generationError && (
-          <div style={{
-            color: "#ff4d4f",
-            marginBottom: "16px",
-            padding: "8px",
-            background: "#303030",
-            borderRadius: "4px"
-          }}>
-            {generationError}
-          </div>
-        )}
-
         {/* Generated Image Display */}
         {isGenerating ? (
           <div style={{ 
@@ -245,7 +255,7 @@ const Stage3Background = ({
           }}>
             <Spin size="large" />
           </div>
-        ) : generatedImage && (
+        ) : generatedBgImage && (
           <div style={{ 
             display: "flex", 
             justifyContent: "center",
@@ -254,7 +264,7 @@ const Stage3Background = ({
             borderRadius: "8px"
           }}>
             <img
-              src={generatedImage}
+              src={generatedBgImage}
               alt="Generated Background"
               style={{
                 width: "500px",
@@ -282,11 +292,11 @@ const Stage3Background = ({
         <Button
           type="primary"
           onClick={handleNext}
-          disabled={!generatedImage || isGenerating}
+          disabled={!generatedBgImage || isGenerating}
           style={{ 
             background: "#19c37d", 
             border: "none",
-            opacity: (!generatedImage || isGenerating) ? 0.5 : 1
+            opacity: (!generatedBgImage || isGenerating) ? 0.5 : 1
           }}
         >
           Next

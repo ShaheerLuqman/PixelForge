@@ -48,9 +48,12 @@ const Stage1Upload = ({ formData, handleInputChange, handleImageUpload, handleSt
   };
 
   const handleNext = () => {
+    console.log('Validating form...', formData);
     if (validateForm()) {
+      console.log('Form validation passed, proceeding to next stage');
       handleStage1Next();
     } else {
+      console.log('Form validation failed');
       message.error('Please fix the errors before proceeding');
     }
   };
