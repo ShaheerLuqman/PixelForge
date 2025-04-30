@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from logics import remove_bg, generate_bg_model_1, generate_bg_model_2, generate_slogan, generate_description
-from finalPost import add_slogan_to_image
+# from logics import remove_bg, generate_bg_model_1, generate_bg_model_2, generate_slogan, generate_description     # Uncomment
+# from finalPost import add_slogan_to_image                                                                         # Uncomment
 from PIL import Image
 import io
 import os
@@ -21,7 +21,11 @@ def remove_bg_route():
 
     image = request.files['image'].read()
     try:
-        result = remove_bg(image)
+        # result = remove_bg(image)
+        img = Image.open('sample/product-og.png')   # Temporary
+        result = io.BytesIO()                       # Temporary
+        img.save(result, format='PNG')              # Temporary
+        result = result.getvalue()                  # Temporary
         return result, 200, {'Content-Type': 'image/png'}
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -44,7 +48,8 @@ def generate_bg_1_route():
         image.save(input_path)
         
         # Generate background
-        result_image, text_color = generate_bg_model_1(image, input_path)
+        # result_image, text_color = generate_bg_model_1(image, input_path)
+        result_image, text_color = Image.open('sample/bg.png'), 'black'     # Temporary
         
         # Convert result back to bytes
         img_byte_arr = io.BytesIO()
@@ -76,7 +81,8 @@ def generate_bg_2_route():
         temp_output_path = "temp/generated_bg.png"
         
         # Generate background
-        result_image, text_color = generate_bg_model_2(image, temp_output_path)
+        # result_image, text_color = generate_bg_model_2(image, temp_output_path)
+        result_image, text_color = Image.open('sample/bg.png'), 'black'
         
         # Convert result back to bytes
         img_byte_arr = io.BytesIO()
@@ -98,7 +104,8 @@ def generate_slogan_route():
         if not image_path:
             return jsonify({'error': 'Image path is required'}), 400
             
-        result = generate_slogan(image_path)
+        # result = generate_slogan(image_path)
+        result = 'This is a sample slogan'
         return jsonify({'slogan': result}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -116,7 +123,8 @@ def generate_description_route():
         if not image_path or not product_name:
             return jsonify({'error': 'Image path and product name are required'}), 400
             
-        result = generate_description(image_path, product_name)
+        # result = generate_description(image_path, product_name)
+        result = 'This is a sample description' 
         return jsonify({'description': result}), 200
     except Exception as e:
         print(f"Error in generate_description_route: {e}")
@@ -130,6 +138,7 @@ def create_final_post_route():
     if 'image' not in request.files:
         return jsonify({'error': 'Image and JSON data are required'}), 400
 
+    '''     # Temporary
     # Get image and convert to PIL Image
     try:
         image_file = request.files['image'].read()
@@ -153,18 +162,19 @@ def create_final_post_route():
     if not slogan:
         print("Slogan is missing from the data.")
         return jsonify({'error': 'Slogan is required'}), 400
+    '''     # Temporary
 
     try:
         # Create temporary directory if it doesn't exist
         os.makedirs("temp", exist_ok=True)
         
+        '''     # Temporary
         # Save the input image first
         input_path = "temp/generated_bg.png"
         image.save(input_path)
         
         # Create temporary file path for output
         temp_output_path = "temp/final_image.png"
-        print(1)
 
         # Process image by adding slogan
         processed_image = add_slogan_to_image(image, slogan, text_color)
@@ -176,13 +186,12 @@ def create_final_post_route():
         
         # Save final image
         processed_image.save(temp_output_path)
-        print(1)
+        '''     # Temporary
         
+        processed_image = Image.open('sample/final_image.png')      # Temporary
         # Convert result back to bytes
         img_byte_arr = io.BytesIO()
-        print(1)
         processed_image.save(img_byte_arr, format='PNG')
-        print(1)
         img_byte_arr = img_byte_arr.getvalue()
 
         return img_byte_arr, 200, {'Content-Type': 'image/png'}
