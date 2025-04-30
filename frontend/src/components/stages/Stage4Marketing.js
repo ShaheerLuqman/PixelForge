@@ -1,20 +1,28 @@
-import React from 'react';
-import { Typography, Button, Input, Spin, message } from 'antd';
+import React, { useState } from 'react';
+import { Typography, Button, Input, Spin, message, notification } from 'antd';
 import axios from 'axios';
+import PropTypes from 'prop-types';
 
 const { Title } = Typography;
 
 const Stage4Marketing = ({
+  generatedBgImage,
   isLoading,
   currentSlogan,
   setCurrentSlogan,
   currentCaption,
   setCurrentCaption,
   setCurrentStage,
-  handleStage4Next,
+  handleStage4NextProp,
   setIsLoading,
-  formData
+  formData,
+  setFinalImageUrl,
+  setIsGenerating,
+  setGenerationError
 }) => {
+  const [isGenerating, setIsGeneratingState] = useState(false);
+  const [generationError, setGenerationErrorState] = useState('');
+
   const generateSlogan = async () => {
     console.log('Generating slogan...');
     try {
@@ -51,6 +59,74 @@ const Stage4Marketing = ({
       setIsLoading((prevState) => ({ ...prevState, caption: false }));
     }
   };
+
+  const handleStage4Next = async () => {
+    console.log('handleStage4Next called'); // Debug log
+    
+    if (!generatedBgImage || !currentSlogan) {
+      message.error("Image and slogan are required to create the final post.");
+      console.log('Missing image or slogan'); // Debug log
+      return;
+    }
+  
+    try {
+      setIsGeneratingState(true);
+      setGenerationErrorState('');
+      setIsLoading(true);
+  
+      console.log('Preparing to call API...'); // Debug log
+  
+      const formData = new FormData();
+      const response = await fetch(generatedBgImage);
+      const blob = await response.blob();
+      formData.append("image", blob, "generated-image.png");
+  
+      // Prepare JSON data for the slogan
+      const jsonData = {
+        slogan: currentSlogan,
+        textColor: "black", // or any color you prefer
+      };
+  
+      // Append JSON data as a string
+      formData.append("data", JSON.stringify(jsonData));
+  
+      console.log('Sending JSON data:', jsonData);
+  
+      // Send the request to the API
+      const result = await axios.post("http://localhost:5000/create-final-post", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        responseType: "blob",
+      });
+  
+      console.log('API response:', result);
+  
+      const imageUrl = URL.createObjectURL(result.data);
+      
+      // Set the final image URL
+      setFinalImageUrl(imageUrl);
+      
+      message.success("Final post created successfully!");
+      setCurrentStage(5);
+    } catch (error) {
+      console.error("Error creating final post:", error);
+      setGenerationErrorState("Failed to create the final post. Please try again.");
+      notification.error({
+        message: "Error",
+        description: "Failed to create the final post. Please try again.",
+        style: {
+          background: "#303030",
+          borderRadius: "4px",
+        },
+      });
+    } finally {
+      setIsGeneratingState(false);
+      setIsLoading(false);
+    }
+  };
+  
+  console.log('setFinalImageUrl:', setFinalImageUrl);
 
   return (
     <div
@@ -187,6 +263,22 @@ const Stage4Marketing = ({
       </div>
     </div>
   );
+};
+
+Stage4Marketing.propTypes = {
+  generatedBgImage: PropTypes.string.isRequired,
+  isLoading: PropTypes.object.isRequired,
+  currentSlogan: PropTypes.string.isRequired,
+  setCurrentSlogan: PropTypes.func.isRequired,
+  currentCaption: PropTypes.string.isRequired,
+  setCurrentCaption: PropTypes.func.isRequired,
+  setCurrentStage: PropTypes.func.isRequired,
+  handleStage4NextProp: PropTypes.func.isRequired,
+  setIsLoading: PropTypes.func.isRequired,
+  formData: PropTypes.object.isRequired,
+  setFinalImageUrl: PropTypes.func.isRequired,
+  setIsGenerating: PropTypes.func.isRequired,
+  setGenerationError: PropTypes.func.isRequired
 };
 
 export default Stage4Marketing; 

@@ -3,14 +3,14 @@ import { Typography, Button, message } from 'antd';
 
 const { Title } = Typography;
 
-const Stage2Review = ({ formData, processedImage, setCurrentStage, handleStage2Next }) => {
+const Stage2Review = ({ formData, originalImage, setCurrentStage, handleStage2Next }) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleNext = async () => {
     try {
       setIsProcessing(true);
-      if (!processedImage) {
-        message.error('Image processing failed. Please try again.');
+      if (!originalImage) {
+        message.error('Image not found. Please try again.');
         return;
       }
       await handleStage2Next();
@@ -46,11 +46,11 @@ const Stage2Review = ({ formData, processedImage, setCurrentStage, handleStage2N
         <p>
           <strong>Product Description:</strong> {formData.productDescription}
         </p>
-        {processedImage ? (
+        {originalImage ? (
           <div style={{ display: "flex", justifyContent: "center", marginTop: "24px" }}>
             <img
-              src={processedImage}
-              alt="Processed Product"
+              src={originalImage}
+              alt="Original Product"
               style={{
                 maxHeight: "300px",
                 width: "auto",
@@ -66,7 +66,7 @@ const Stage2Review = ({ formData, processedImage, setCurrentStage, handleStage2N
             borderRadius: "8px",
             color: "#ff4d4f" 
           }}>
-            Failed to load processed image. Please go back and try again.
+            Failed to load image. Please go back and try again.
           </div>
         )}
       </div>
@@ -85,11 +85,11 @@ const Stage2Review = ({ formData, processedImage, setCurrentStage, handleStage2N
           type="primary"
           onClick={handleNext}
           loading={isProcessing}
-          disabled={!processedImage || isProcessing}
+          disabled={!originalImage || isProcessing}
           style={{ 
             background: "#19c37d", 
             border: "none",
-            opacity: (!processedImage || isProcessing) ? 0.5 : 1 
+            opacity: (!originalImage || isProcessing) ? 0.5 : 1 
           }}
         >
           {isProcessing ? 'Processing...' : 'Next'}

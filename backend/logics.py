@@ -208,7 +208,7 @@ def generate_bg_model_1(product_image: Image.Image, output_path: str = None) -> 
     processed_bg = recolor_image(background_image, prompt)
     
     # Create final image combining background and product
-    final_image = create_final_image(processed_bg, product_image, "", text_color)
+    final_image = create_final_image(processed_bg, product_image)
     
     # Save if output path provided
     if output_path:
@@ -312,7 +312,7 @@ def generate_slogan(image_path: str) -> str:
             "Write a slogan of less than 4 words for the product. Slogan should be catchy and memorable. Return only one slogan and no punctuation marks."
         ]).text
         
-        return response.strip()
+        return response.strip().title()
                 
     except Exception as e:
         print(f"Error generating slogan: {e}")

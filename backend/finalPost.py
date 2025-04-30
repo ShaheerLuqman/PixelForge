@@ -18,24 +18,9 @@ def resize_image(image: Image.Image, max_size: int) -> Image.Image:
     new_height = int(height * scale_factor)
     return image.resize((new_width, new_height), Image.Resampling.LANCZOS)
 
-def create_final_image(background_image: Image.Image, product_image: Image.Image, slogan: str, text_color: str) -> Image.Image:
-    """Create a final image by overlaying the product image on the background and adding a slogan."""
-    # Resize images to a maximum of 300 pixels while maintaining aspect ratio
-    product_image = resize_image(product_image, 250)
-
-    # Create a new image with the background
-    final_image = background_image.copy()
-
-    # Calculate position to center the product image
-    bg_width, bg_height = final_image.size
-    prod_width, prod_height = product_image.size
-    position = ((bg_width - prod_width) // 2, (bg_height - prod_height) // 2)
-
-    # Paste the product image onto the background
-    final_image.paste(product_image, position, product_image)
-
-    # Draw the slogan on the final image
-    draw = ImageDraw.Draw(final_image)
+def add_slogan_to_image(image: Image.Image, slogan: str, text_color: str) -> Image.Image:
+    """Add a slogan to the image and return the modified image."""
+    draw = ImageDraw.Draw(image)
 
     # Load the Berlin Sans FB font from the specified path
     font_path = r"C:\Windows\Fonts\BRLNSR.ttf"  # Use raw string to avoid escape issues
@@ -54,8 +39,27 @@ def create_final_image(background_image: Image.Image, product_image: Image.Image
     text_height = text_bbox[3] - text_bbox[1]
 
     # Position the slogan at the bottom center
+    bg_width, bg_height = image.size
     text_position = ((bg_width - text_width) // 2, bg_height - text_height - 20)  # 20 pixels from the bottom
     draw.text(text_position, slogan, fill=text_color, font=font)  # Use text_color for the text
+
+    return image  # Return the modified image
+
+def create_final_image(background_image: Image.Image, product_image: Image.Image) -> Image.Image:
+    """Create a final image by overlaying the product image on the background."""
+    # Resize product image to fit within 400x400 while maintaining aspect ratio
+    product_image = resize_image(product_image, 350)
+
+    # Create a new image with the background
+    final_image = background_image.copy()
+
+    # Calculate position to center the product image
+    bg_width, bg_height = final_image.size
+    prod_width, prod_height = product_image.size
+    position = ((bg_width - prod_width) // 2, ((bg_height - prod_height) // 2) - 25)
+
+    # Paste the product image onto the background
+    final_image.paste(product_image, position, product_image)
 
     return final_image
 
@@ -105,7 +109,7 @@ if __name__ == "__main__":
         product_image = Image.open(product_path)
 
         # Create the final image
-        final_image = create_final_image(background_image, product_image, fixed_slogan, "black")
+        final_image = create_final_image(background_image, product_image)
 
         # Display the final image
         final_image.show()
