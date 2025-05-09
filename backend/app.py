@@ -1,14 +1,82 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from models import db, User
+from config import Config
+from flask_migrate import Migrate
+import os
+from datetime import timedelta
 # from logics import remove_bg, generate_bg_model_1, generate_bg_model_2, generate_slogan, generate_description     # Uncomment
 # from finalPost import add_slogan_to_image                                                                         # Uncomment
 from PIL import Image
 import io
-import os
 import json
 
 app = Flask(__name__)
+app.config.from_object(Config)
+
+# Initialize extensions
 CORS(app)
+db.init_app(app)
+jwt = JWTManager(app)
+migrate = Migrate(app, db)
+
+# Create database tables
+with app.app_context():
+    db.create_all()
+
+# Authentication routes
+@app.route('/api/signup', methods=['POST'])
+def signup():
+    data = request.get_json()
+    
+    if not data or not data.get('email') or not data.get('password'):
+        return jsonify({'error': 'Email and password are required'}), 400
+    
+    if User.query.filter_by(email=data['email']).first():
+        return jsonify({'error': 'Email already registered'}), 400
+    
+    user = User(email=data['email'], password=data['password'])
+    db.session.add(user)
+    db.session.commit()
+    
+    return jsonify({'message': 'User created successfully'}), 201
+
+@app.route('/api/signin', methods=['POST'])
+def signin():
+    data = request.get_json()
+    
+    if not data or not data.get('email') or not data.get('password'):
+        return jsonify({'error': 'Email and password are required'}), 400
+    
+    user = User.query.filter_by(email=data['email']).first()
+    
+    if not user or not user.check_password(data['password']):
+        return jsonify({'error': 'Invalid email or password'}), 401
+    
+    access_token = create_access_token(identity=user.id)
+    return jsonify({
+        'access_token': access_token,
+        'user': user.to_dict()
+    }), 200
+
+@app.route('/api/logout', methods=['POST'])
+@jwt_required()
+def logout():
+    # Since we're using JWT, we don't need to do anything server-side
+    # The client should remove the token
+    return jsonify({'message': 'Successfully logged out'}), 200
+
+@app.route('/api/me', methods=['GET'])
+@jwt_required()
+def get_current_user():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    
+    return jsonify(user.to_dict()), 200
 
 @app.route('/')
 def home():
