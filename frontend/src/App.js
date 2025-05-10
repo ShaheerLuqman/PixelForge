@@ -17,6 +17,13 @@ import Stage2Review from "./components/stages/Stage2Review";
 import Stage3Background from "./components/stages/Stage3Background";
 import Stage4Marketing from "./components/stages/Stage4Marketing";
 import Stage5Final from "./components/stages/Stage5Final";
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import Login from './components/Login';
+import Signup from './components/Signup';
+import ProtectedRoute from './components/ProtectedRoute';
+import Dashboard from './components/Dashboard';
+import './App.css';
 
 const { Sider, Content } = Layout;
 const { Title } = Typography;
@@ -149,102 +156,55 @@ function App() {
   };
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      {/* Commenting out Sider
-      <Sider
-        width={260}
-        style={{
-          background: "#171717",
-          padding: "14px",
-          overflow: "auto",
-          height: "100vh",
-          position: "fixed",
-          left: 0,
-        }}
-      >
-        {/* Sidebar content will be added later
-      </Sider>
-      */}
-
-      <Layout style={{ marginLeft: 0 }}>
-        {" "}
-        {/* Updated marginLeft from 260 to 0 */}
-        <Content
-          style={{
-            background: "#212121",
-            padding: "0",
-            overflow: "auto",
-            display: "flex",
-            flexDirection: "column",
-            minHeight: "100vh",
-          }}
-        >
-          <Header />
-
-          {currentStage === 1 && (
-            <Stage1Upload
-              formData={formData}
-              handleInputChange={handleInputChange}
-              handleImageUpload={handleImageUpload}
-              handleStage1Next={handleStage1Next}
-            />
-          )}
-
-          {currentStage === 2 && (
-            <Stage2Review
-              formData={formData}
-              originalImage={originalImage}
-              nonBgImage={nonBgImage}
-              setCurrentStage={setCurrentStage}
-              handleStage2Next={handleStage2Next}
-            />
-          )}
-
-          {currentStage === 3 && (
-            <Stage3Background
-              originalImage={originalImage}
-              nonBgImage={nonBgImage}
-              isLoading={isLoading}
-              selectedBackgroundIndex={selectedBackgroundIndex}
-              setSelectedBackgroundIndex={setSelectedBackgroundIndex}
-              setCurrentStage={setCurrentStage}
-              handleStage3Next={handleStage3Next}
-              setIsLoading={setIsLoading}
-              generatedBgImage={generatedBgImage}
-              setGeneratedBgImage={setGeneratedBgImage}
-            />
-          )}
-
-          {currentStage === 4 && (
-            <Stage4Marketing
-              generatedBgImage={generatedBgImage}
-              isLoading={isLoading}
-              currentSlogan={currentSlogan}
-              setCurrentSlogan={setCurrentSlogan}
-              currentCaption={currentCaption}
-              setCurrentCaption={setCurrentCaption}
-              setCurrentStage={setCurrentStage}
-              handleStage4Next={handleStage4Next}
-              setIsLoading={setIsLoading}
-              formData={formData}
-              setFinalImageUrl={setFinalImageUrl}
-            />
-          )}
-
-          {currentStage === 5 && (
-            <Stage5Final
-              finalImageUrl={finalImageUrl}
-              currentSlogan={currentSlogan}
-              currentCaption={currentCaption}
-              rating={rating}
-              setRating={setRating}
-              handleReset={handleReset}
-              setCurrentStage={setCurrentStage}
-            />
-          )}
-        </Content>
-      </Layout>
-    </Layout>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Auth Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          
+          {/* Protected Routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard
+                  currentStage={currentStage}
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                  handleImageUpload={handleImageUpload}
+                  handleStage1Next={handleStage1Next}
+                  originalImage={originalImage}
+                  nonBgImage={nonBgImage}
+                  setCurrentStage={setCurrentStage}
+                  handleStage2Next={handleStage2Next}
+                  isLoading={isLoading}
+                  selectedBackgroundIndex={selectedBackgroundIndex}
+                  setSelectedBackgroundIndex={setSelectedBackgroundIndex}
+                  handleStage3Next={handleStage3Next}
+                  setIsLoading={setIsLoading}
+                  generatedBgImage={generatedBgImage}
+                  setGeneratedBgImage={setGeneratedBgImage}
+                  currentSlogan={currentSlogan}
+                  setCurrentSlogan={setCurrentSlogan}
+                  currentCaption={currentCaption}
+                  setCurrentCaption={setCurrentCaption}
+                  handleStage4Next={handleStage4Next}
+                  setFinalImageUrl={setFinalImageUrl}
+                  finalImageUrl={finalImageUrl}
+                  rating={rating}
+                  setRating={setRating}
+                  handleReset={handleReset}
+                />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Redirect root to login if not authenticated */}
+          <Route path="/" element={<Navigate to="/login" />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 

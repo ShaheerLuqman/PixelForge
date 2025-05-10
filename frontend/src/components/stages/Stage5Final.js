@@ -99,7 +99,7 @@ const Stage5Final = ({
         <Rate
           value={rating}
           onChange={setRating}
-          style={{ fontSize: "24px", color: "#19c37d" }}
+          style={{ fontSize: "24px", color: "#52c41a" }}
         />
 
         {rating > 0 && (
@@ -128,7 +128,7 @@ const Stage5Final = ({
         <Button
           type="primary"
           onClick={handleReset}
-          style={{ background: "#19c37d", border: "none" }}
+          style={{ background: "#52c41a", border: "none" }}
         >
           Start New Project
         </Button>

@@ -26,7 +26,7 @@ with app.app_context():
     db.create_all()
 
 # Authentication routes
-@app.route('/api/signup', methods=['POST'])
+@app.route('/signup', methods=['POST'])
 def signup():
     data = request.get_json()
     
@@ -42,7 +42,7 @@ def signup():
     
     return jsonify({'message': 'User created successfully'}), 201
 
-@app.route('/api/signin', methods=['POST'])
+@app.route('/signin', methods=['POST'])
 def signin():
     data = request.get_json()
     
@@ -60,14 +60,22 @@ def signin():
         'user': user.to_dict()
     }), 200
 
-@app.route('/api/logout', methods=['POST'])
+@app.route('/logout', methods=['POST'])
 @jwt_required()
 def logout():
-    # Since we're using JWT, we don't need to do anything server-side
-    # The client should remove the token
-    return jsonify({'message': 'Successfully logged out'}), 200
+    try:
+        # Get current user
+        current_user_id = get_jwt_identity()
+        if not current_user_id:
+            return jsonify({'error': 'Invalid token'}), 401
 
-@app.route('/api/me', methods=['GET'])
+        # Since we're using JWT, we don't need to do anything server-side
+        # The client will remove the token
+        return jsonify({'message': 'Successfully logged out'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/me', methods=['GET'])
 @jwt_required()
 def get_current_user():
     user_id = get_jwt_identity()

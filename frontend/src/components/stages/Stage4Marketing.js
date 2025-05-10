@@ -256,7 +256,7 @@ const Stage4Marketing = ({
         <Button
           type="primary"
           onClick={handleStage4Next}
-          style={{ background: "#19c37d", border: "none" }}
+          style={{ background: "#52c41a", border: "none" }}
         >
           Next
         </Button>

@@ -128,7 +128,7 @@ const Stage1Upload = ({ formData, handleInputChange, handleImageUpload, handleSt
               accept="image/*"
             >
               <Button
-                icon={<UploadOutlined style={{ color: "#19c37d" }} />}
+                icon={<UploadOutlined style={{ color: "#52c41a" }} />}
                 style={{
                   background: "#303030",
                   border: "none",
@@ -198,7 +198,7 @@ const Stage1Upload = ({ formData, handleInputChange, handleImageUpload, handleSt
         <Button
           type="primary"
           onClick={handleNext}
-          style={{ background: "#19c37d", border: "none" }}
+          style={{ background: "#52c41a", border: "none" }}
         >
           Next
         </Button>

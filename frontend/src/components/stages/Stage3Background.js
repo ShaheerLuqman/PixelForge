@@ -120,7 +120,7 @@ const Stage3Background = ({
     },
     // Style for the selected option
     '.ant-select-item-option-selected': {
-      backgroundColor: "#19c37d !important",
+      backgroundColor: "#52c41a !important",
       color: "#fff !important",
     },
   };
@@ -294,7 +294,7 @@ const Stage3Background = ({
           onClick={handleNext}
           disabled={!generatedBgImage || isGenerating}
           style={{ 
-            background: "#19c37d", 
+            background: "#52c41a", 
             border: "none",
             opacity: (!generatedBgImage || isGenerating) ? 0.5 : 1
           }}
@@ -318,7 +318,7 @@ const globalStyles = `
   }
   
   .dark-theme-dropdown .ant-select-item-option-selected {
-    background: #19c37d !important;
+    background: #52c41a !important;
   }
   
   .dark-theme-dropdown .ant-select-dropdown {

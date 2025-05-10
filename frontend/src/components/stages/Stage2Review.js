@@ -87,7 +87,7 @@ const Stage2Review = ({ formData, originalImage, setCurrentStage, handleStage2Ne
           loading={isProcessing}
           disabled={!originalImage || isProcessing}
           style={{ 
-            background: "#19c37d", 
+            background: "#52c41a", 
             border: "none",
             opacity: (!originalImage || isProcessing) ? 0.5 : 1 
           }}
