@@ -1,11 +1,15 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from models import db, User
+from models import db, User, ProductShowcase
 from config import Config
 from flask_migrate import Migrate
 import os
 from datetime import timedelta
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+from werkzeug.utils import secure_filename
 # from logics import remove_bg, generate_bg_model_1, generate_bg_model_2, generate_slogan, generate_description     # Uncomment
 # from finalPost import add_slogan_to_image                                                                         # Uncomment
 from PIL import Image
@@ -24,6 +28,13 @@ migrate = Migrate(app, db)
 # Create database tables
 with app.app_context():
     db.create_all()
+
+# Configure Cloudinary
+cloudinary.config(
+    cloud_name="drhafhnlg",
+    api_key="843722855345958",
+    api_secret="m3gIAhZr85ZD7SHnWsavY-VF4BA"
+)
 
 # Authentication routes
 @app.route('/signup', methods=['POST'])
@@ -273,6 +284,91 @@ def create_final_post_route():
         return img_byte_arr, 200, {'Content-Type': 'image/png'}
     except Exception as e:
         print(f"Error processing final image: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/product-showcase', methods=['POST'])
+def create_product_showcase():
+    try:
+        # Get user_id from form data
+        user_id = request.form.get('user_id')
+        if not user_id:
+            return jsonify({'error': 'User ID is required'}), 400
+            
+        # Check if user exists
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        # Get form data
+        product_name = request.form.get('product_name')
+        product_description = request.form.get('product_description')
+        product_slogan = request.form.get('product_slogan')
+        caption_generated = request.form.get('caption_generated')
+        model_type = request.form.get('model_type')
+        post_rating = request.form.get('post_rating')
+        video_prompt = request.form.get('video_prompt')
+        video_rating = request.form.get('video_rating')
+        
+        if not product_name or not product_description:
+            return jsonify({'error': 'Product name and description are required'}), 400
+
+        # Initialize URLs dictionary to store Cloudinary URLs
+        urls = {}
+        
+        # Handle file uploads
+        file_fields = {
+            'product_org': 'product_org_url',
+            'product_nonbg': 'product_nonbg_url',
+            'background': 'background_url',
+            'final_image': 'final_image_url',
+            'video': 'video_url'
+        }
+        
+        for field_name, url_field in file_fields.items():
+            if field_name in request.files:
+                file = request.files[field_name]
+                if file:
+                    # Upload to Cloudinary with resource type auto for both images and videos
+                    result = cloudinary.uploader.upload(file, resource_type="auto")
+                    urls[field_name] = result['secure_url']
+                    
+                    # Get video metadata if it's a video
+                    if field_name == 'video' and result.get('resource_type') == 'video':
+                        urls['video_duration'] = str(result.get('duration', ''))
+                        urls['video_resolution'] = f"{result.get('width', '')}x{result.get('height', '')}"
+
+        # Create new product showcase
+        showcase = ProductShowcase(
+            user_id=user_id,
+            product_name=product_name,
+            product_description=product_description,
+            product_org_url=urls.get('product_org'),
+            product_nonbg_url=urls.get('product_nonbg'),
+            background_url=urls.get('background'),
+            final_image_url=urls.get('final_image'),
+            model_type=model_type,
+            product_slogan=product_slogan,
+            caption_generated=caption_generated,
+            post_rating=post_rating,
+            video_url=urls.get('video'),
+            video_duration=urls.get('video_duration'),
+            video_resolution=urls.get('video_resolution'),
+            video_prompt=video_prompt,
+            video_rating=video_rating
+        )
+
+        # Save to database
+        db.session.add(showcase)
+        db.session.commit()
+
+        return jsonify({
+            'message': 'Product showcase created successfully',
+            'showcase': showcase.to_dict()
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error in create_product_showcase: {str(e)}")  # Add logging
         return jsonify({'error': str(e)}), 500
 
 

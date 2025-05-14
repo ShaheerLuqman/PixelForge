@@ -40,15 +40,15 @@ class ProductShowcase(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     
     # Post details
-    product_name = db.Column(db.String(200))
-    product_description = db.Column(db.Text)
-    product_org_url = db.Column(db.String(500))
-    product_nonbg_url = db.Column(db.String(500))
-    model_type = db.Column(db.String(100))
-    background_url = db.Column(db.String(500))
-    product_slogan = db.Column(db.String(200))
-    caption_generated = db.Column(db.Text)
-    final_image_url = db.Column(db.String(500))
+    product_name = db.Column(db.String(200), nullable=False)
+    product_description = db.Column(db.Text, nullable=False)
+    product_org_url = db.Column(db.String(500), nullable=False)
+    product_nonbg_url = db.Column(db.String(500), nullable=False)
+    model_type = db.Column(db.String(100), nullable=False)
+    background_url = db.Column(db.String(500), nullable=False)
+    product_slogan = db.Column(db.String(200), nullable=False)
+    caption_generated = db.Column(db.Text, nullable=False)
+    final_image_url = db.Column(db.String(500), nullable=False)
     post_rating = db.Column(db.Integer, default=5)
     
     # Video details
