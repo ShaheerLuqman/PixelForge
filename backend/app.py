@@ -391,7 +391,8 @@ def get_user_showcases():
         showcase_list = [{
             'id': showcase.id,
             'product_name': showcase.product_name,
-            'created_at': showcase.created_at.isoformat()
+            'created_at': showcase.created_at.isoformat(),
+            'image_url': showcase.final_image_url
         } for showcase in showcases]
         
         return jsonify(showcase_list), 200

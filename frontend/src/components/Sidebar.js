@@ -40,7 +40,7 @@ const Sidebar = ({ onLogout }) => {
 
   useEffect(() => {
     const fetchPastProducts = async () => {
-      if (!user?.id) return; // Don't fetch if no user ID available
+      if (!user?.id) return;
       
       try {
         setLoading(true);
@@ -57,7 +57,7 @@ const Sidebar = ({ onLogout }) => {
     };
 
     fetchPastProducts();
-  }, [user?.id]); // Re-fetch when user ID changes
+  }, [user?.id]);
 
   return (
     <Sider
@@ -85,133 +85,148 @@ const Sidebar = ({ onLogout }) => {
         <h1 style={{ color: '#fff', margin: 0, fontSize: '24px' }}>PixelForge</h1>
       </div>
 
-      {/* Past Products Section - Scrollable */}
-      <div style={{ 
-        flex: 1, 
-        overflow: 'auto',
-        padding: '16px',
+      {/* Main content wrapper */}
+      <div style={{
+        flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        minHeight: 0, // Important for Firefox
+        height: 'calc(100vh - 60px)', // Subtract header height
+        position: 'relative',
+        overflow: 'hidden',
       }}>
+        {/* Past Products Section - Scrollable */}
         <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          marginBottom: '16px',
-          color: '#fff',
-          flexShrink: 0, // Prevent header from shrinking
+          flex: 1,
+          overflow: 'auto',
+          padding: '16px',
+          paddingBottom: '140px', // Add padding to prevent overlap with user info
         }}>
-          <HistoryOutlined style={{ marginRight: '8px' }} />
-          <Text strong style={{ color: '#fff', margin: 0 }}>Past Products</Text>
-        </div>
-        
-        <List
-          loading={loading}
-          style={{
-            overflow: 'auto',
-            flex: 1,
-          }}
-          dataSource={pastProducts}
-          renderItem={item => (
-            <List.Item
-              style={{
-                padding: '8px',
-                background: '#212121',
-                borderRadius: '6px',
-                marginBottom: '8px',
-                cursor: 'pointer',
-                border: 'none',
-              }}
-              onClick={() => {/* TODO: Handle click */}}
-            >
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                width: '100%',
-                color: '#fff' 
-              }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            marginBottom: '16px',
+            color: '#fff',
+          }}>
+            <HistoryOutlined style={{ marginRight: '8px' }} />
+            <Text strong style={{ color: '#fff', margin: 0 }}>Past Products</Text>
+          </div>
+          
+          <List
+            loading={loading}
+            style={{
+              overflow: 'visible',
+            }}
+            dataSource={pastProducts}
+            renderItem={item => (
+              <List.Item
+                style={{
+                  padding: '8px',
+                  background: '#212121',
+                  borderRadius: '6px',
+                  marginBottom: '8px',
+                  cursor: 'pointer',
+                  border: 'none',
+                }}
+                onClick={() => {/* TODO: Handle click */}}
+              >
                 <div style={{ 
-                  marginRight: '12px',
-                  width: '32px',
-                  height: '32px',
-                  background: '#303030',
-                  borderRadius: '4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  width: '100%',
+                  color: '#fff' 
                 }}>
-                  {item.imageUrl ? (
-                    <img 
-                      src={item.imageUrl} 
-                      alt={item.product_name}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        borderRadius: '4px'
-                      }}
-                    />
-                  ) : (
-                    <PictureOutlined style={{ color: '#52c41a' }} />
-                  )}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '14px' }}>{item.product_name}</div>
-                  <div style={{ fontSize: '12px', color: '#999' }}>
-                    {formatDate(item.created_at)}
+                  <div style={{ 
+                    marginRight: '12px',
+                    width: '32px',
+                    height: '32px',
+                    background: '#303030',
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden', // Prevent image overflow
+                  }}>
+                    {item.image_url ? (
+                      <img 
+                        src={item.image_url} 
+                        alt={item.product_name}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          borderRadius: '4px'
+                        }}
+                        onError={(e) => {
+                          e.target.onerror = null; // Prevent infinite loop
+                          e.target.style.display = 'none'; // Hide broken image
+                          e.target.parentNode.innerHTML = '<span class="anticon"><PictureOutlined style={{ color: "#52c41a" }} /></span>';
+                        }}
+                      />
+                    ) : (
+                      <PictureOutlined style={{ color: '#52c41a' }} />
+                    )}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '14px' }}>{item.product_name}</div>
+                    <div style={{ fontSize: '12px', color: '#999' }}>
+                      {formatDate(item.created_at)}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </List.Item>
-          )}
-        />
-      </div>
+              </List.Item>
+            )}
+          />
+        </div>
 
-      {/* User info and logout section - Fixed at bottom */}
-      <div
-        style={{
-          borderTop: '1px solid #303030',
-          padding: '16px',
-          background: '#212121',
-          flexShrink: 0, // Prevent from shrinking
-          marginTop: 'auto', // Push to bottom
-        }}
-      >
+        {/* User info and logout section - Fixed at bottom */}
         <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            marginBottom: '16px',
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            background: '#171717',
+            borderTop: '1px solid #303030',
+            padding: '16px',
+            zIndex: 10,
           }}
         >
-          <Avatar
-            icon={<UserOutlined />}
-            style={{ 
-              background: '#52c41a',
-              marginRight: '12px' 
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '16px',
             }}
-          />
-          <div style={{ color: '#fff' }}>
-            <div style={{ fontWeight: 500 }}>{user?.name || 'User'}</div>
-            <div style={{ fontSize: '12px', color: '#999' }}>
-              {user?.email || 'user@example.com'}
+          >
+            <Avatar
+              icon={<UserOutlined />}
+              style={{ 
+                background: '#52c41a',
+                marginRight: '12px' 
+              }}
+            />
+            <div style={{ color: '#fff' }}>
+              <div style={{ fontWeight: 500 }}>{user?.name || 'User'}</div>
+              <div style={{ fontSize: '12px', color: '#999' }}>
+                {user?.email || 'user@example.com'}
+              </div>
             </div>
           </div>
+          <Button
+            type="text"
+            icon={<LogoutOutlined />}
+            onClick={onLogout}
+            style={{
+              width: '100%',
+              textAlign: 'left',
+              color: '#ff4d4f',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            Logout
+          </Button>
         </div>
-        <Button
-          type="text"
-          icon={<LogoutOutlined />}
-          onClick={onLogout}
-          style={{
-            width: '100%',
-            textAlign: 'left',
-            color: '#ff4d4f',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          Logout
-        </Button>
       </div>
     </Sider>
   );
