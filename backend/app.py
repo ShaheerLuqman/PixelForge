@@ -14,7 +14,7 @@ from werkzeug.utils import secure_filename
 # from finalPost import add_slogan_to_image                                                                         # Uncomment
 from PIL import Image
 import io
-import json
+import json,time
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -109,7 +109,8 @@ def remove_bg_route():
     image = request.files['image'].read()
     try:
         # result = remove_bg(image)
-        img = Image.open('sample/product-og.png')   # Temporary
+        img = Image.open('sample/product-nonbg.png')   # Temporary
+        time.sleep(3)
         result = io.BytesIO()                       # Temporary
         img.save(result, format='PNG')              # Temporary
         result = result.getvalue()                  # Temporary
@@ -133,7 +134,7 @@ def generate_bg_1_route():
         # Save the input image first
         input_path = "temp/product-nonbg.png"
         image.save(input_path)
-        
+        time.sleep(30)
         # Generate background
         # result_image, text_color = generate_bg_model_1(image, input_path)
         result_image, text_color = Image.open('sample/bg.png'), 'black'     # Temporary
@@ -163,13 +164,13 @@ def generate_bg_2_route():
         # Save the input image first
         input_path = "temp/product-nonbg.png"
         image.save(input_path)
-        
+        time.sleep(30)
         # Create temporary file path for output
         temp_output_path = "temp/generated_bg.png"
         
         # Generate background
         # result_image, text_color = generate_bg_model_2(image, temp_output_path)
-        result_image, text_color = Image.open('sample/bg.png'), 'black'
+        result_image, text_color = Image.open('sample/bg2.png'), 'black'
         
         # Convert result back to bytes
         img_byte_arr = io.BytesIO()
@@ -190,9 +191,11 @@ def generate_slogan_route():
         image_path = data.get('imagePath')
         if not image_path:
             return jsonify({'error': 'Image path is required'}), 400
-            
+        
+        time.sleep(1)
+        
         # result = generate_slogan(image_path)
-        result = 'This is a sample slogan'
+        result = 'Effortless Stride'
         return jsonify({'slogan': result}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -209,9 +212,11 @@ def generate_description_route():
         
         if not image_path or not product_name:
             return jsonify({'error': 'Image path and product name are required'}), 400
+        
+        time.sleep(2)
             
         # result = generate_description(image_path, product_name)
-        result = 'This is a sample description' 
+        result = 'Sleek design meets ultimate performance. Step up your game with these must-have kicks! #athleticshoes #style #performance' 
         return jsonify({'description': result}), 200
     except Exception as e:
         print(f"Error in generate_description_route: {e}")

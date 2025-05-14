@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Layout, Button, Avatar, List, Typography, message } from 'antd';
 import { 
   LogoutOutlined, 
   UserOutlined, 
   HistoryOutlined,
-  PictureOutlined 
+  PictureOutlined,
+  PlusOutlined,
+  SyncOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const { Sider } = Layout;
 const { Text } = Typography;
@@ -37,27 +40,62 @@ const Sidebar = ({ onLogout }) => {
   const { user } = useAuth();
   const [pastProducts, setPastProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const lastFetchedData = useRef([]);
+  const navigate = useNavigate();
+
+  const fetchPastProducts = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setLoading(true);
+      const response = await axios.get('http://localhost:5000/get-product-showcase', {
+        headers: { 'X-User-ID': user.id }
+      });
+      
+      // Check if data has changed
+      const newData = response.data;
+      const hasChanged = JSON.stringify(newData) !== JSON.stringify(lastFetchedData.current);
+      
+      if (hasChanged) {
+        setPastProducts(newData);
+        lastFetchedData.current = newData;
+      }
+      
+      return { data: newData, hasChanged };
+    } catch (error) {
+      console.error('Error fetching past products:', error);
+      message.error('Failed to load past products');
+      return { hasChanged: false };
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPastProducts = async () => {
-      if (!user?.id) return;
-      
-      try {
-        setLoading(true);
-        const response = await axios.get('http://localhost:5000/get-product-showcase', {
-          headers: { 'X-User-ID': user.id }
-        });
-        setPastProducts(response.data);
-      } catch (error) {
-        console.error('Error fetching past products:', error);
-        message.error('Failed to load past products');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPastProducts();
   }, [user?.id]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    const result = await fetchPastProducts();
+    if (!result.hasChanged) {
+      message.info('No new updates found');
+    } else {
+      message.success('Product list updated');
+    }
+  };
+
+  const handleProductClick = async (productId) => {
+    // Check if there are updates before navigating
+    const result = await fetchPastProducts();
+    navigate(`../product-showcase/${productId}`);
+  };
+
+  const handleCreateNew = () => {
+    navigate('../dashboard');
+  };
 
   return (
     <Sider
@@ -94,6 +132,27 @@ const Sidebar = ({ onLogout }) => {
         position: 'relative',
         overflow: 'hidden',
       }}>
+        {/* Create New Button */}
+        <div style={{ padding: '16px' }}>
+          <Button 
+            type="primary" 
+            icon={<PlusOutlined />} 
+            size="large"
+            onClick={handleCreateNew}
+            style={{
+              width: '100%',
+              height: '48px',
+              borderRadius: '8px',
+              fontSize: '16px',
+              background: '#52c41a',
+              borderColor: '#52c41a',
+              marginBottom: '20px'
+            }}
+          >
+            Create New
+          </Button>
+        </div>
+
         {/* Past Products Section - Scrollable */}
         <div style={{ 
           flex: 1,
@@ -104,11 +163,21 @@ const Sidebar = ({ onLogout }) => {
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
+            justifyContent: 'space-between',
             marginBottom: '16px',
             color: '#fff',
           }}>
-            <HistoryOutlined style={{ marginRight: '8px' }} />
-            <Text strong style={{ color: '#fff', margin: 0 }}>Past Products</Text>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <HistoryOutlined style={{ marginRight: '8px' }} />
+              <Text strong style={{ color: '#fff', margin: 0 }}>Past Products</Text>
+            </div>
+            <Button
+              type="text"
+              icon={<SyncOutlined spin={refreshing} />}
+              onClick={handleRefresh}
+              style={{ color: '#52c41a' }}
+              size="small"
+            />
           </div>
           
           <List
@@ -127,7 +196,7 @@ const Sidebar = ({ onLogout }) => {
                   cursor: 'pointer',
                   border: 'none',
                 }}
-                onClick={() => {/* TODO: Handle click */}}
+                onClick={() => handleProductClick(item.id)}
               >
                 <div style={{ 
                   display: 'flex', 

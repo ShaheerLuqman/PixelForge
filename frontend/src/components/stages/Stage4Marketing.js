@@ -174,7 +174,7 @@ const Stage4Marketing = ({
         }}>
           {isLoading?.slogan ? (
             <div style={{ display: "flex", justifyContent: "center" }}>
-              <Spin size="small" />
+              <Spin size="small" style={{ color: "#52c41a" }} />
             </div>
           ) : (
             <Input.TextArea
@@ -221,7 +221,7 @@ const Stage4Marketing = ({
         }}>
           {isLoading?.caption ? (
             <div style={{ display: "flex", justifyContent: "center" }}>
-              <Spin size="small" />
+              <Spin size="small" style={{ color: "#52c41a" }} />
             </div>
           ) : (
             <Input.TextArea

@@ -17,12 +17,14 @@ import Stage2Review from "./components/stages/Stage2Review";
 import Stage3Background from "./components/stages/Stage3Background";
 import Stage4Marketing from "./components/stages/Stage4Marketing";
 import Stage5Final from "./components/stages/Stage5Final";
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import ProtectedRoute from './components/ProtectedRoute';
 import Dashboard from './components/Dashboard';
+import ProductShowcase from './components/ProductShowcase';
+import MainLayout from './components/MainLayout';
 import './App.css';
 
 const { Sider, Content } = Layout;
@@ -163,11 +165,18 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           
-          {/* Protected Routes */}
-          <Route
-            path="/dashboard"
+          {/* Protected Routes within MainLayout */}
+          <Route 
+            path="/" 
             element={
               <ProtectedRoute>
+                <MainLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route 
+              path="dashboard" 
+              element={
                 <Dashboard
                   currentStage={currentStage}
                   formData={formData}
@@ -196,12 +205,14 @@ function App() {
                   setRating={setRating}
                   handleReset={handleReset}
                 />
-              </ProtectedRoute>
-            }
-          />
+              } 
+            />
+            
+            <Route path="product-showcase/:id" element={<ProductShowcase />} />
+          </Route>
           
-          {/* Redirect root to login if not authenticated */}
-          <Route path="/" element={<Navigate to="/login" />} />
+          {/* Redirect root to dashboard if authenticated */}
+          <Route path="/" element={<Navigate to="/dashboard" />} />
         </Routes>
       </Router>
     </AuthProvider>

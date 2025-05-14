@@ -20,6 +20,12 @@ body {
   flex-direction: column;
 }
 
+/* Darker stars for rating on dark backgrounds */
+.dark-stars .ant-rate-star:not(.ant-rate-star-full) .ant-rate-star-first,
+.dark-stars .ant-rate-star:not(.ant-rate-star-full) .ant-rate-star-second {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+
 /* Sidebar styles */
 .ant-layout-sider {
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
@@ -100,8 +106,17 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background-color: rgba(33, 33, 33, 0.8);
+  height: 100%;
+}
+
+/* Make all loading spinners green */
+.ant-spin-dot-item {
+  background-color: #52c41a !important;
+}
+
+/* Make button loading spinners green */
+.ant-btn-loading-icon .anticon {
+  color: #52c41a !important;
 }
 
 .logout-button {

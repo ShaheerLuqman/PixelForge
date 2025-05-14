@@ -253,7 +253,7 @@ const Stage3Background = ({
             background: "#303030",
             borderRadius: "8px"
           }}>
-            <Spin size="large" />
+            <Spin size="large" style={{ color: "#52c41a" }} />
           </div>
         ) : generatedBgImage && (
           <div style={{ 
