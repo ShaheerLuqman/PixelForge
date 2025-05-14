@@ -371,4 +371,55 @@ def create_product_showcase():
         print(f"Error in create_product_showcase: {str(e)}")  # Add logging
         return jsonify({'error': str(e)}), 500
 
+@app.route('/get-product-showcase', methods=['GET'])
+def get_user_showcases():
+    try:
+        # Get user ID from header
+        user_id = request.headers.get('X-User-ID')
+        if not user_id:
+            return jsonify({'error': 'X-User-ID header is required'}), 400
+        
+        # Check if user exists
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Query showcases for the user
+        showcases = ProductShowcase.query.filter_by(user_id=user_id).order_by(ProductShowcase.created_at.desc()).all()
+        
+        # Format the response
+        showcase_list = [{
+            'id': showcase.id,
+            'product_name': showcase.product_name,
+            'created_at': showcase.created_at.isoformat()
+        } for showcase in showcases]
+        
+        return jsonify(showcase_list), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/product-showcase/<int:showcase_id>', methods=['GET'])
+def get_showcase_details(showcase_id):
+    try:
+        # Get user ID from header
+        user_id = request.headers.get('X-User-ID')
+        if not user_id:
+            return jsonify({'error': 'X-User-ID header is required'}), 400
+            
+        # Check if user exists
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Query the specific showcase
+        showcase = ProductShowcase.query.filter_by(id=showcase_id, user_id=user_id).first()
+        
+        if not showcase:
+            return jsonify({'error': 'Showcase not found or unauthorized'}), 404
+        
+        # Return the full showcase details using the to_dict method
+        return jsonify(showcase.to_dict()), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 

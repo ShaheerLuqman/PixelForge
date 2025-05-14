@@ -1,45 +1,63 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Button, Avatar, List, Typography } from 'antd';
+import { Layout, Button, Avatar, List, Typography, message } from 'antd';
 import { 
   LogoutOutlined, 
   UserOutlined, 
   HistoryOutlined,
   PictureOutlined 
 } from '@ant-design/icons';
+import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 
 const { Sider } = Layout;
 const { Text } = Typography;
 
+// Utility function to format date
+const formatDate = (dateString) => {
+  if (!dateString) return 'No date';
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid date';
+    
+    return date.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return 'Invalid date';
+  }
+};
+
 const Sidebar = ({ onLogout }) => {
   const { user } = useAuth();
   const [pastProducts, setPastProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // TODO: Replace this with actual API call to get past products
   useEffect(() => {
-    // Simulated past products data
-    const mockPastProducts = [
-      {
-        id: 1,
-        name: 'Gaming Headset',
-        date: '2024-03-20',
-        imageUrl: null
-      },
-      {
-        id: 2,
-        name: 'Smart Watch',
-        date: '2024-03-19',
-        imageUrl: null
-      },
-      {
-        id: 3,
-        name: 'Wireless Earbuds',
-        date: '2024-03-18',
-        imageUrl: null
+    const fetchPastProducts = async () => {
+      if (!user?.id) return; // Don't fetch if no user ID available
+      
+      try {
+        setLoading(true);
+        const response = await axios.get('http://localhost:5000/get-product-showcase', {
+          headers: { 'X-User-ID': user.id }
+        });
+        setPastProducts(response.data);
+      } catch (error) {
+        console.error('Error fetching past products:', error);
+        message.error('Failed to load past products');
+      } finally {
+        setLoading(false);
       }
-    ];
-    setPastProducts(mockPastProducts);
-  }, []);
+    };
+
+    fetchPastProducts();
+  }, [user?.id]); // Re-fetch when user ID changes
 
   return (
     <Sider
@@ -88,6 +106,7 @@ const Sidebar = ({ onLogout }) => {
         </div>
         
         <List
+          loading={loading}
           style={{
             overflow: 'auto',
             flex: 1,
@@ -121,12 +140,25 @@ const Sidebar = ({ onLogout }) => {
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <PictureOutlined style={{ color: '#52c41a' }} />
+                  {item.imageUrl ? (
+                    <img 
+                      src={item.imageUrl} 
+                      alt={item.product_name}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: '4px'
+                      }}
+                    />
+                  ) : (
+                    <PictureOutlined style={{ color: '#52c41a' }} />
+                  )}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '14px' }}>{item.name}</div>
+                  <div style={{ fontSize: '14px' }}>{item.product_name}</div>
                   <div style={{ fontSize: '12px', color: '#999' }}>
-                    {new Date(item.date).toLocaleDateString()}
+                    {formatDate(item.created_at)}
                   </div>
                 </div>
               </div>
