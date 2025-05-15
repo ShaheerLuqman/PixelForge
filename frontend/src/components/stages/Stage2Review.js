@@ -5,18 +5,31 @@ const { Title } = Typography;
 
 const Stage2Review = ({ formData, originalImage, setCurrentStage, handleStage2Next }) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const handleNext = async () => {
     try {
       setIsProcessing(true);
+      setErrorMessage(null);
+      
       if (!originalImage) {
         message.error('Image not found. Please try again.');
         return;
       }
+      
+      // Simulate processing delay and CUDA error
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Throw CUDA device not found error
+      throw new Error('CUDA device not found. Please check your GPU drivers and try again.');
+      
+      // This won't execute due to the error above
       await handleStage2Next();
     } catch (error) {
-      message.error('Failed to process image. Please try again.');
-      setCurrentStage(1);
+      const errorMsg = error.message || 'Failed to process image. Please try again.';
+      message.error(errorMsg);
+      setErrorMessage(errorMsg);
+      // Don't navigate back to previous stage
     } finally {
       setIsProcessing(false);
     }
@@ -70,6 +83,20 @@ const Stage2Review = ({ formData, originalImage, setCurrentStage, handleStage2Ne
           </div>
         )}
       </div>
+      
+      {errorMessage && (
+        <div style={{ 
+          textAlign: "center", 
+          padding: "15px", 
+          background: "#3b1618",
+          borderRadius: "8px",
+          color: "#ff4d4f",
+          marginBottom: "20px" 
+        }}>
+          {errorMessage}
+        </div>
+      )}
+      
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Button
           onClick={() => setCurrentStage(1)}
